@@ -6,6 +6,9 @@
     ],
     "sources": [
       "node_nan_minimal.cc"
+    ],
+    "cflags": [
+      "-std=c++11",
     ]
   }]
 }

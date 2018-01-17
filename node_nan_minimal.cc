@@ -6,6 +6,7 @@ class Internal {
 
 class B {
   public:
+    Internal internal;
     explicit B(Internal internal):internal(internal){}
 };
 
@@ -19,7 +20,7 @@ class A {
 
 class BWrapper : public Nan::ObjectWrap {
   public:
-    B a_;
+    B b_;
     explicit BWrapper(B b) : b_(b) {}
     ~BWrapper() {}
 };
@@ -36,7 +37,7 @@ class AWrapper : public Nan::ObjectWrap {
     tpl->SetClassName(Nan::New("A").ToLocalChecked());
     tpl->InstanceTemplate()->SetInternalFieldCount(1);
 
-    Nan::SetPrototypeMethod(tpl, "foo", foo());
+    Nan::SetPrototypeMethod(tpl, "foo", foo);
 
     constructor().Reset(Nan::GetFunction(tpl).ToLocalChecked());
     Nan::Set(target, Nan::New("A").ToLocalChecked(), Nan::GetFunction(tpl).ToLocalChecked());
@@ -51,7 +52,6 @@ class AWrapper : public Nan::ObjectWrap {
       obj->Wrap(info.This());
       info.GetReturnValue().Set(info.This());
     } else {
-      //TODO: Not sure what this is doing and/or why
       const int argc = 1;
       v8::Local<v8::Value> argv[argc] = {info[0]};
       v8::Local<v8::Function> cons = Nan::New(constructor());
@@ -61,11 +61,16 @@ class AWrapper : public Nan::ObjectWrap {
 
   static NAN_METHOD(foo) {
     AWrapper* obj = Nan::ObjectWrap::Unwrap<AWrapper>(info.Holder());
-    B b = obj->foo();
+    B b = obj->a_.foo();
     BWrapper * result = new BWrapper(b);
     // Something to get a B object to javascript
     //...
-    info.GetReturnValue().Set(result->Wrap());
+    //info.GetReturnValue().Set(result->Wrap());
+  }
+
+  static inline Nan::Persistent<v8::Function> & constructor() {
+    static Nan::Persistent<v8::Function> my_constructor;
+    return my_constructor;
   }
 
 };

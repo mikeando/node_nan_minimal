@@ -1,20 +1,14 @@
-const anb = require('./build/Release/anb');
+const M = require('./build/Release/node_nan_minimal');
 
-console.log("ANB = ", anb);
+console.log("M = ", M);
 
-const project = new anb.Project(1, "./demo_project");
-console.log("project = ", project);
-console.log("project.getValue() = ", project.getValue());
-console.log("project.getPath() = ", project.getPath());
+const a = new M.A();
+console.log("a = ",a);
 
-//const project = anb.createProject("./demo_project");
-//console.log("project.path = "+project.path)
-
-const file = project.createFile("tofu");
-console.log("file = project.getFile('tofu') = ", file);
-
-const entity = file.createEntity();
-console.log("entity = file.createEntity() = ", entity);
+const b = a.foo();
+console.log("b = ",b);
 
 
+const a2 = M.A();
+console.log("a2 = ",a2);
 
