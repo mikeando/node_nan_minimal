@@ -1,0 +1,12 @@
+{
+  "name": "node_nan_minimal",
+  "version": "0.0.1",
+  "main": "bindings.js",
+  "scripts": {
+    "build": "node-gyp build",
+    "install": "node-gyp rebuild"
+  },
+  "dependencies": {
+    "nan": "^2.7.0"
+  }
+}
