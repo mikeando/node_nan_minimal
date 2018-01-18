@@ -23,6 +23,44 @@ class BWrapper : public Nan::ObjectWrap {
     B b_;
     explicit BWrapper(B b) : b_(b) {}
     ~BWrapper() {}
+
+  static void init_class() {
+    v8::Local<v8::FunctionTemplate> tpl = Nan::New<v8::FunctionTemplate>(New);
+    tpl->SetClassName(Nan::New("B").ToLocalChecked());
+    tpl->InstanceTemplate()->SetInternalFieldCount(1);
+    constructor().Reset(Nan::GetFunction(tpl).ToLocalChecked());
+  }
+
+  static NAN_METHOD(New) {
+	  if (!info.IsConstructCall()) {
+      return Nan::ThrowError("File() must be called as a constructor");
+    }
+
+    if (info.Length() != 1 || ! info[0]->IsExternal()) {
+        return Nan::ThrowError("File() can only be called internally");
+    }
+
+    B* b = static_cast<B*>(info[0].As<v8::External>()->Value());
+    BWrapper *obj = new BWrapper(*b);
+    obj->Wrap(info.This());
+    info.GetReturnValue().Set(info.This());
+  }
+
+  static v8::Local<v8::Object> NewInstance(B* b) {
+    Nan::EscapableHandleScope scope;
+
+    const unsigned argc = 1;
+    v8::Local<v8::Value> argv[argc] = { Nan::New<v8::External>(b) };
+    v8::Local<v8::Function> cons = Nan::New<v8::Function>(constructor());
+    v8::Local<v8::Object> instance = cons->NewInstance(argc, argv);
+
+    return scope.Escape(instance);
+  }
+
+  static inline Nan::Persistent<v8::Function> & constructor() {
+    static Nan::Persistent<v8::Function> my_constructor;
+    return my_constructor;
+  }
 };
 
 
@@ -62,10 +100,7 @@ class AWrapper : public Nan::ObjectWrap {
   static NAN_METHOD(foo) {
     AWrapper* obj = Nan::ObjectWrap::Unwrap<AWrapper>(info.Holder());
     B b = obj->a_.foo();
-    BWrapper * result = new BWrapper(b);
-    // Something to get a B object to javascript
-    //...
-    //info.GetReturnValue().Set(result->Wrap());
+    info.GetReturnValue().Set(BWrapper::NewInstance(&b));
   }
 
   static inline Nan::Persistent<v8::Function> & constructor() {
@@ -77,6 +112,7 @@ class AWrapper : public Nan::ObjectWrap {
 
 
 NAN_MODULE_INIT(InitModule) {
+  BWrapper::init_class();
   AWrapper::register_class(target);
 }
 
